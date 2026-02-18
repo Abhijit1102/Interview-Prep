@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UML Diagrams — Quick Guide for Developers</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #10101a;
+    --surface2: #16162a;
+    --border: #1e1e3a;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e97b;
+    --accent4: #f7971e;
+    --text: #e8e6f0;
+    --text-muted: #7a7898;
+    --text-dim: #4a4868;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Syne', sans-serif;
+    --body: 'Crimson Pro', serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 18px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ─── Noise Texture Overlay ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ─── Grid Background ─── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(108,99,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(108,99,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── Layout ─── */
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px 120px;
+  }
+
+  /* ─── Header ─── */
+  .hero {
+    padding: 100px 0 80px;
+    position: relative;
+  }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(108,99,255,0.3);
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(42px, 7vw, 80px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero h1 .line2 {
+    display: block;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 20px;
+    color: var(--text-muted);
+    max-width: 540px;
+    font-style: italic;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 32px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .pill.accent { border-color: rgba(108,99,255,0.4); color: var(--accent); background: rgba(108,99,255,0.07); }
+  .pill.accent2 { border-color: rgba(255,101,132,0.4); color: var(--accent2); background: rgba(255,101,132,0.07); }
+  .pill.accent3 { border-color: rgba(67,233,123,0.4); color: var(--accent3); background: rgba(67,233,123,0.07); }
+
+  .hero-line {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  /* ─── TOC ─── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 32px 36px;
+    margin: 60px 0;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .toc-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px 32px;
+  }
+
+  .toc a {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toc a::before { content: '→'; color: var(--text-dim); font-size: 11px; }
+  .toc a:hover { color: var(--accent); }
+
+  /* ─── Sections ─── */
+  .section {
+    margin: 80px 0;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .section-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 40px 0 14px;
+    color: var(--text);
+  }
+
+  h4 {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 28px 0 12px;
+  }
+
+  p {
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  strong { color: var(--text); font-weight: 600; }
+  em { color: var(--accent); font-style: italic; }
+
+  /* ─── Divider ─── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 60px 0;
+    position: relative;
+  }
+  .divider::after {
+    content: '◆';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg);
+    color: var(--text-dim);
+    padding: 0 16px;
+    font-size: 10px;
+  }
+
+  /* ─── Tables ─── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-muted);
+    vertical-align: middle;
+  }
+
+  tbody td:first-child { color: var(--text); }
+
+  .sym {
+    color: var(--accent2);
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .check { color: var(--accent3); }
+  .cross { color: var(--accent2); opacity: 0.5; }
+
+  /* ─── Code / Pre ─── */
+  pre, code {
+    font-family: var(--mono);
+  }
+
+  code {
+    background: rgba(108,99,255,0.12);
+    color: var(--accent);
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    padding: 24px 28px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #a8f5c0;
+    margin: 20px 0;
+    border-radius: 0 2px 2px 0;
+    position: relative;
+  }
+
+  pre::before {
+    content: attr(data-label);
+    position: absolute;
+    top: 0; right: 0;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+  }
+
+  pre .comment { color: var(--text-dim); }
+  pre .arrow { color: var(--accent); }
+  pre .return { color: var(--accent4); }
+  pre .label { color: var(--accent2); }
+
+  /* ─── Class Box ─── */
+  .class-box {
+    display: inline-block;
+    border: 1px solid var(--accent);
+    min-width: 280px;
+    margin: 24px 0;
+    position: relative;
+    box-shadow: 0 0 40px rgba(108,99,255,0.1), inset 0 0 40px rgba(108,99,255,0.02);
+  }
+
+  .class-stereotype {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent4);
+    text-align: center;
+    padding: 8px 16px 4px;
+    border-bottom: 1px dashed var(--border);
+    letter-spacing: 0.05em;
+  }
+
+  .class-name {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 20px 10px;
+    border-bottom: 1px solid var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .class-section {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .class-section:last-child { border-bottom: none; }
+
+  .class-attr {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 4px 0;
+    display: flex;
+    gap: 6px;
+  }
+  .attr-pub { color: var(--accent3); }
+  .attr-prot { color: var(--accent4); }
+  .attr-priv { color: var(--accent2); }
+  .attr-name { color: var(--text); }
+  .attr-type { color: var(--text-dim); }
+
+  /* ─── Association Cards ─── */
+  .assoc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .assoc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .assoc-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+
+  .assoc-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .assoc-card.type1::before { background: var(--accent); }
+  .assoc-card.type2::before { background: var(--accent3); }
+  .assoc-card.type3::before { background: var(--accent4); }
+  .assoc-card.type4::before { background: var(--accent2); }
+
+  .assoc-type {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .assoc-card.type1 .assoc-type { color: var(--accent); }
+  .assoc-card.type2 .assoc-type { color: var(--accent3); }
+  .assoc-card.type3 .assoc-type { color: var(--accent4); }
+  .assoc-card.type4 .assoc-type { color: var(--accent2); }
+
+  .assoc-title {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .assoc-example {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(0,0,0,0.3);
+    padding: 6px 10px;
+    margin: 10px 0;
+    color: var(--accent3);
+  }
+
+  .assoc-desc {
+    font-size: 15px;
+    color: var(--text-muted);
+  }
+
+  /* ─── Sequence Diagram ─── */
+  .seq-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 36px 32px;
+    overflow-x: auto;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .seq-participants {
+    display: flex;
+    gap: 0;
+    justify-content: space-between;
+    margin-bottom: 0;
+    position: relative;
+  }
+
+  .seq-participant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+  }
+
+  .seq-box {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 14px;
+    text-align: center;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    z-index: 2;
+    position: relative;
+  }
+
+  .seq-lifeline {
+    width: 1px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--border) 0,
+      var(--border) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+    flex: 1;
+    min-height: 480px;
+  }
+
+  /* Sequence messages as pure CSS */
+  .seq-messages {
+    position: absolute;
+    top: 53px;
+    left: 0; right: 0;
+    pointer-events: none;
+  }
+
+  .seq-msg {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 18px 0;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .msg-label {
+    background: var(--bg);
+    padding: 2px 8px;
+    color: var(--text);
+    white-space: nowrap;
+    font-size: 11px;
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    letter-spacing: 0.04em;
+  }
+
+  .msg-sync { color: var(--accent3); }
+  .msg-async { color: var(--accent4); border-style: dashed; }
+
+  /* ─── ATM Steps ─── */
+  .step-list {
+    margin: 20px 0;
+    counter-reset: step;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.5s ease both;
+  }
+  .step-item:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    min-width: 32px;
+    padding-top: 3px;
+  }
+
+  .step-content {}
+  .step-title {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .step-desc {
+    font-size: 16px;
+    color: var(--text-muted);
+  }
+
+  .step-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 100px;
+    margin-left: 8px;
+  }
+  .badge-sync { background: rgba(67,233,123,0.12); color: var(--accent3); border: 1px solid rgba(67,233,123,0.3); }
+  .badge-async { background: rgba(247,151,30,0.12); color: var(--accent4); border: 1px solid rgba(247,151,30,0.3); }
+
+  /* ─── Error Table ─── */
+  .error-table tbody td:nth-child(3) {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent4);
+  }
+
+  /* ─── Why Learn Section ─── */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    margin: 28px 0;
+  }
+
+  .why-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .why-card:hover { border-color: rgba(108,99,255,0.5); }
+
+  .why-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .why-title {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .why-desc {
+    font-size: 15px;
+    color: var(--text-muted);
+  }
+
+  /* ─── Tools Grid ─── */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 24px 0;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: block;
+  }
+  .tool-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    background: var(--surface2);
+  }
+
+  .tool-name {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .tool-type {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .tool-url {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* ─── Folder Tree ─── */
+  .folder-tree {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    font-family: var(--mono);
+    font-size: 13px;
+    margin: 20px 0;
+  }
+
+  .tree-item {
+    padding: 4px 0;
+    color: var(--text-muted);
+  }
+  .tree-item.root { color: var(--accent); margin-bottom: 6px; }
+  .tree-item.dir { color: var(--accent3); }
+  .tree-item.file { color: var(--text-dim); }
+
+  /* ─── Animations ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Inline highlight ─── */
+  .highlight {
+    color: var(--accent);
+    font-family: var(--mono);
+  }
+
+  .callout {
+    background: rgba(108,99,255,0.07);
+    border: 1px solid rgba(108,99,255,0.2);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 16px;
+    color: var(--text-muted);
+  }
+
+  .callout strong { color: var(--accent); }
+
+  /* ─── Scroll reveal ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ─── Badge labels ─── */
+  .type-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tb-structural { background: rgba(108,99,255,0.15); color: var(--accent); }
+  .tb-behavioral { background: rgba(255,101,132,0.15); color: var(--accent2); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .page-wrapper { padding: 0 16px 80px; }
+    .assoc-grid { grid-template-columns: 1fr; }
+    .why-grid { grid-template-columns: 1fr; }
+    .tools-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- ─── HERO ─── -->
+  <header class="hero">
+    <div class="hero-tag">Developer Reference v2.0</div>
+    <h1>
+      UML Diagrams
+      <span class="line2">Quick Guide</span>
+    </h1>
+    <p class="hero-sub">A structured reference to Unified Modeling Language — from class blueprints to interaction flows.</p>
+    <div class="hero-pills">
+      <span class="pill accent">Class Diagrams</span>
+      <span class="pill accent2">Sequence Diagrams</span>
+      <span class="pill accent3">OOP · LLD · System Design</span>
+      <span class="pill">Beginner Friendly</span>
+    </div>
+    <div class="hero-line"></div>
+  </header>
+
+  <!-- ─── TOC ─── -->
+  <nav class="toc reveal">
+    <div class="toc-title">// Table of Contents</div>
+    <div class="toc-grid">
+      <a href="#what-is-uml">What is UML?</a>
+      <a href="#types">Types of Diagrams</a>
+      <a href="#class-diagrams">Class Diagrams</a>
+      <a href="#access-modifiers">Access Modifiers</a>
+      <a href="#abstract-classes">Abstract Classes</a>
+      <a href="#example-car">Example: Car Class</a>
+      <a href="#access-scope">Access Scope Table</a>
+      <a href="#associations">Associations</a>
+      <a href="#sequence-diagrams">Sequence Diagrams</a>
+      <a href="#seq-components">Components</a>
+      <a href="#msg-types">Message Types</a>
+      <a href="#login-flow">Login Flow</a>
+      <a href="#atm-flow">ATM Transaction</a>
+      <a href="#why-learn">Why Learn UML</a>
+      <a href="#tools">Recommended Tools</a>
+      <a href="#folder">Folder Structure</a>
+    </div>
+  </nav>
+
+  <!-- ─── WHAT IS UML ─── -->
+  <section class="section reveal" id="what-is-uml">
+    <span class="section-number">// 01</span>
+    <h2>What is UML?</h2>
+    <p><strong>Unified Modeling Language (UML)</strong> is a standardized visual language for representing software architecture and object-oriented systems — designed to be written <em>before</em> any actual code.</p>
+    <p>Think of it as architectural blueprints for software. It allows teams to reason about structure, communicate intent, and catch design problems early — without writing a single line of implementation code.</p>
+    <div class="why-grid" style="margin-top:28px;">
+      <div class="why-card">
+        <span class="why-icon">📐</span>
+        <div class="why-title">Plan Structure</div>
+        <div class="why-desc">Define classes, relationships, and flows before touching a keyboard.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🗣️</span>
+        <div class="why-title">Communicate Design</div>
+        <div class="why-desc">Speak a shared language across engineering, architecture, and management.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🛡️</span>
+        <div class="why-title">Reduce Errors</div>
+        <div class="why-desc">Catch structural mistakes at design time — not in production.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🎯</span>
+        <div class="why-title">Interview Ready</div>
+        <div class="why-desc">Essential for System Design and LLD interview rounds.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── TYPES OF DIAGRAMS ─── -->
+  <section class="section reveal" id="types">
+    <span class="section-number">// 02</span>
+    <h2>Types of UML Diagrams</h2>
+    <p>UML diagrams split into two fundamental categories depending on whether they capture the <strong>shape</strong> or the <strong>behavior</strong> of a system.</p>
+
+    <h3>Structural (Static) <span class="type-badge tb-structural">Static</span></h3>
+    <p>Describe <em>how the system is organized</em> at any given moment — the skeleton of your application.</p>
+    <div class="callout">
+      <strong>Examples:</strong> Class Diagram, Object Diagram, Component Diagram, Package Diagram, Deployment Diagram
+    </div>
+
+    <h3>Behavioral (Dynamic) <span class="type-badge tb-behavioral">Dynamic</span></h3>
+    <p>Describe <em>how the system behaves over time</em> — the pulse of your application.</p>
+    <div class="callout">
+      <strong>Examples:</strong> Sequence Diagram, Use Case Diagram, Activity Diagram, State Diagram, Communication Diagram
+    </div>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── CLASS DIAGRAMS ─── -->
+  <section class="section reveal" id="class-diagrams">
+    <span class="section-number">// 03</span>
+    <h2>Class Diagrams</h2>
+    <p>A <strong>Class Diagram</strong> is the most widely used UML diagram. It defines classes, their attributes and methods, and how they relate to each other — forming the complete blueprint of your code before implementation begins.</p>
+
+    <div class="callout">A class diagram answers: <strong>"What objects exist in this system and how are they connected?"</strong></div>
+
+    <h3 id="access-modifiers">Access Modifiers</h3>
+    <p>Visibility of class members is denoted by a prefix symbol in front of each attribute or method name.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Symbol</th><th>Access Level</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sym">+</span></td>
+            <td><strong>Public</strong></td>
+            <td>Accessible from anywhere — no restrictions</td>
+          </tr>
+          <tr>
+            <td><span class="sym attr-priv">−</span></td>
+            <td><strong>Private</strong></td>
+            <td>Accessible only inside the declaring class</td>
+          </tr>
+          <tr>
+            <td><span class="sym attr-prot">#</span></td>
+            <td><strong>Protected</strong></td>
+            <td>Accessible inside the class and all subclasses</td>
+          </tr>
+          <tr>
+            <td><span class="sym" style="color:var(--text-muted)">~</span></td>
+            <td><strong>Package</strong></td>
+            <td>Accessible to classes in the same package</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="abstract-classes">Abstract Classes</h3>
+    <p>Abstract classes use the <code>&lt;&lt;abstract&gt;&gt;</code> stereotype annotation above the class name. They define a contract without full implementation — subclasses must provide concrete behavior.</p>
+    <pre data-label="UML Notation">&lt;&lt;abstract&gt;&gt;
+ClassName</pre>
+
+    <h3 id="example-car">Example: Car Class</h3>
+    <p>A complete class diagram for an abstract <code>Car</code> base class with mixed visibility:</p>
+
+    <div class="class-box">
+      <div class="class-stereotype">&lt;&lt;abstract&gt;&gt;</div>
+      <div class="class-name">Car</div>
+      <div class="class-section">
+        <div class="class-attr"><span class="attr-pub">+</span> <span class="attr-name">brand</span><span class="attr-type"> : String</span></div>
+        <div class="class-attr"><span class="attr-pub">+</span> <span class="attr-name">model</span><span class="attr-type"> : String</span></div>
+        <div class="class-attr"><span class="attr-prot">#</span> <span class="attr-name">engine</span><span class="attr-type"> : int</span></div>
+      </div>
+      <div class="class-section">
+        <div class="class-attr"><span class="attr-priv">−</span> <span class="attr-name">startEngine</span><span class="attr-type">() : void</span></div>
+        <div class="class-attr"><span class="attr-priv">−</span> <span class="attr-name">stopEngine</span><span class="attr-type">() : void</span></div>
+        <div class="class-attr"><span class="attr-priv">−</span> <span class="attr-name">accelerate</span><span class="attr-type">() : void</span></div>
+        <div class="class-attr"><span class="attr-priv">−</span> <span class="attr-name">brake</span><span class="attr-type">() : void</span></div>
+      </div>
+    </div>
+
+    <h3 id="access-scope">Access Scope Table</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Access Level</th><th style="text-align:center">Within Class</th><th style="text-align:center">Child Class</th><th style="text-align:center">Outside Class</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Public <code>+</code></strong></td>
+            <td style="text-align:center"><span class="check">✓</span></td>
+            <td style="text-align:center"><span class="check">✓</span></td>
+            <td style="text-align:center"><span class="check">✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>Protected <code>#</code></strong></td>
+            <td style="text-align:center"><span class="check">✓</span></td>
+            <td style="text-align:center"><span class="check">✓</span></td>
+            <td style="text-align:center"><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td><strong>Private <code>−</code></strong></td>
+            <td style="text-align:center"><span class="check">✓</span></td>
+            <td style="text-align:center"><span class="cross">✗</span></td>
+            <td style="text-align:center"><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td><strong>Package <code>~</code></strong></td>
+            <td style="text-align:center"><span class="check">✓</span></td>
+            <td style="text-align:center"><span class="cross">✗</span></td>
+            <td style="text-align:center"><span class="cross">✗</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── ASSOCIATIONS ─── -->
+  <section class="section reveal" id="associations">
+    <span class="section-number">// 04</span>
+    <h2>Associations</h2>
+    <p>Associations describe the <strong>relationships between classes</strong>. Choosing the right association type is critical — it directly influences how objects are coupled and how they manage each other's lifecycle.</p>
+
+    <div class="assoc-grid">
+      <div class="assoc-card type1">
+        <div class="assoc-type">IS-A Relationship</div>
+        <div class="assoc-title">Inheritance</div>
+        <div class="assoc-example">SportsCar ────|▷ Car</div>
+        <div class="assoc-desc">A <strong>child class</strong> extends a parent class. The child inherits all non-private members.</div>
+      </div>
+
+      <div class="assoc-card type2">
+        <div class="assoc-type">HAS-A Relationship</div>
+        <div class="assoc-title">Association</div>
+        <div class="assoc-example">Arun ──── House</div>
+        <div class="assoc-desc">One object <strong>uses or references</strong> another, with no ownership implied.</div>
+      </div>
+
+      <div class="assoc-card type3">
+        <div class="assoc-type">Weak HAS-A</div>
+        <div class="assoc-title">Aggregation</div>
+        <div class="assoc-example">Room ◇──── Chair</div>
+        <div class="assoc-desc">The child <strong>can exist independently</strong>. Destroy the Room — the Chair still exists.</div>
+      </div>
+
+      <div class="assoc-card type4">
+        <div class="assoc-type">Strong HAS-A</div>
+        <div class="assoc-title">Composition</div>
+        <div class="assoc-example">House ◆──── Room</div>
+        <div class="assoc-desc">The child <strong>cannot exist without</strong> the parent. Destroy the House — Rooms are gone.</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:8px;">
+      <strong>Pro Tip:</strong> Composition is the strongest form of ownership. Use it when the child's entire lifecycle is managed by the parent. Use Aggregation when objects are shared or have independent meaning.
+    </div>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── SEQUENCE DIAGRAMS ─── -->
+  <section class="section reveal" id="sequence-diagrams">
+    <span class="section-number">// 05</span>
+    <h2>Sequence Diagrams</h2>
+    <p>A <strong>Sequence Diagram</strong> shows how objects interact with each other <em>over time</em>. It focuses on the ordering of messages — who sends what, to whom, and in what sequence.</p>
+
+    <h3 id="seq-components">Components</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Objects</strong></td>
+            <td>Participants in the interaction (e.g., User, Server, Database). Displayed as labeled boxes at the top.</td>
+          </tr>
+          <tr>
+            <td><strong>Lifeline</strong></td>
+            <td>A vertical dashed line descending from each object, representing its existence over time.</td>
+          </tr>
+          <tr>
+            <td><strong>Activation Bar</strong></td>
+            <td>A solid vertical rectangle on the lifeline showing an object is actively processing a message.</td>
+          </tr>
+          <tr>
+            <td><strong>Messages</strong></td>
+            <td>Horizontal arrows between lifelines representing method calls, returns, or signals.</td>
+          </tr>
+          <tr>
+            <td><strong>Guard Conditions</strong></td>
+            <td>Bracketed conditions like <code>[balance > 0]</code> that control message flow.</td>
+          </tr>
+          <tr>
+            <td><strong>Alt / Loop Fragments</strong></td>
+            <td>Combined fragments that model branching (<code>alt</code>), looping (<code>loop</code>), or optional (<code>opt</code>) behavior.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="msg-types">Message Types</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Arrow Style</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Synchronous</strong></td>
+            <td><code>──────►</code></td>
+            <td>Caller <strong>waits</strong> for a response before continuing</td>
+            <td><code>User → Server : login()</code></td>
+          </tr>
+          <tr>
+            <td><strong>Asynchronous</strong></td>
+            <td><code>- - - -►</code></td>
+            <td>Caller <strong>does not wait</strong> and continues immediately</td>
+            <td><code>Server → Email : sendEmail()</code></td>
+          </tr>
+          <tr>
+            <td><strong>Return</strong></td>
+            <td><code>◄- - - -</code></td>
+            <td>Response back to the original caller</td>
+            <td><code>Database --> Server : userValid</code></td>
+          </tr>
+          <tr>
+            <td><strong>Self-call</strong></td>
+            <td><code>↩</code></td>
+            <td>Object calling one of its own methods</td>
+            <td><code>Server → Server : validateToken()</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="login-flow">Example: Login Flow</h3>
+    <pre data-label="Sequence">User  ---------►  Server  :  login(username, password)
+                  Server  ---------►  Database  :  verifyUser(username)
+                           Database  - - - - - ►  Server  :  userValid / userNotFound
+                  Server  - - - - - ►  User  :  loginSuccess / loginFailed</pre>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── ATM TRANSACTION ─── -->
+  <section class="section reveal" id="atm-flow">
+    <span class="section-number">// 06</span>
+    <h2>Example: ATM Transaction</h2>
+    <p>A complete sequence diagram modeling a cash withdrawal involving four participants with distinct responsibilities.</p>
+
+    <div class="table-wrap" style="margin-top:24px;">
+      <table>
+        <thead>
+          <tr><th>Participant</th><th>Role</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Customer</strong></td><td>The person interacting physically with the machine</td></tr>
+          <tr><td><strong>ATM</strong></td><td>Handles input, display, cash dispensing, and card management</td></tr>
+          <tr><td><strong>BankServer</strong></td><td>Backend system processing authentication and transaction logic</td></tr>
+          <tr><td><strong>Database</strong></td><td>Persistent store of account records, PINs (hashed), and balances</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin-top:36px;">Step-by-Step Flow</h4>
+    <pre data-label="ATM Sequence">Customer          ATM          BankServer       Database
+    |               |               |               |
+    |─insertCard───►|               |               |
+    |               |─validateCard()►               |
+    |               |               |─checkCard()──►|
+    |               |               |◄──cardValid───|
+    |               |◄──cardAccepted|               |
+    |               |               |               |
+    |◄──promptPIN───|               |               |
+    |───enterPIN───►|               |               |
+    |               |──verifyPIN()─►|               |
+    |               |               |──matchPIN()──►|
+    |               |               |◄─pinCorrect───|
+    |               |◄──authSuccess─|               |
+    |               |               |               |
+    |◄───showMenu───|               |               |
+    |─selectWithdraw►               |               |
+    |               |──requestFunds(amount)─────────►
+    |               |               |─checkBalance()►
+    |               |               |◄─balanceOK────|
+    |               |               |─deductAmount()►
+    |               |               |◄─updateDone───|
+    |               |◄─approveDispense              |
+    |               |               |               |
+    |◄─dispenseCash─|               |               |
+    |◄─printReceipt─| (async)       |               |
+    |◄───ejectCard──|               |               |
+    |               |               |               |
+                    [END SESSION]</pre>
+
+    <h4>Flow Breakdown</h4>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">Card Insertion & Validation <span class="step-badge badge-sync">Synchronous</span></div>
+          <div class="step-desc">Customer inserts card. ATM sends <code>validateCard()</code> to BankServer, which cross-checks against the Database. Returns <code>cardValid</code> or ejects on failure.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">PIN Entry & Authentication <span class="step-badge badge-sync">Synchronous</span></div>
+          <div class="step-desc">ATM prompts for PIN. Entered PIN is forwarded to BankServer, which matches the stored hash in the Database. Returns <code>authSuccess</code> or increments failed attempt counter.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-title">Transaction Request <span class="step-badge badge-sync">Synchronous</span></div>
+          <div class="step-desc">Customer selects withdrawal amount from menu. ATM sends <code>requestFunds(amount)</code> to BankServer, triggering a balance check in the Database.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <div class="step-title">Balance Check & Deduction <span class="step-badge badge-sync">Synchronous</span></div>
+          <div class="step-desc">BankServer verifies sufficient funds, atomically deducts the amount, and confirms the transaction. Responds with <code>approveDispense</code> to ATM.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">05</div>
+        <div class="step-content">
+          <div class="step-title">Cash Dispensing & Session End <span class="step-badge badge-async">Asynchronous</span></div>
+          <div class="step-desc">ATM dispenses cash and asynchronously prints the receipt (caller does not wait). Card is ejected and the session terminates.</div>
+        </div>
+      </div>
+    </div>
+
+    <h4>Message Summary</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>From</th><th>To</th><th>Message</th><th>Type</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Customer</td><td>ATM</td><td><code>insertCard</code></td><td>Sync</td></tr>
+          <tr><td>2</td><td>ATM</td><td>BankServer</td><td><code>validateCard()</code></td><td>Sync</td></tr>
+          <tr><td>3</td><td>BankServer</td><td>Database</td><td><code>checkCard()</code></td><td>Sync</td></tr>
+          <tr><td>4</td><td>ATM</td><td>Customer</td><td><code>promptPIN</code></td><td>Sync</td></tr>
+          <tr><td>5</td><td>Customer</td><td>ATM</td><td><code>enterPIN</code></td><td>Sync</td></tr>
+          <tr><td>6</td><td>ATM</td><td>BankServer</td><td><code>verifyPIN()</code></td><td>Sync</td></tr>
+          <tr><td>7</td><td>BankServer</td><td>Database</td><td><code>matchPIN()</code></td><td>Sync</td></tr>
+          <tr><td>8</td><td>Customer</td><td>ATM</td><td><code>selectWithdraw(amount)</code></td><td>Sync</td></tr>
+          <tr><td>9</td><td>ATM</td><td>BankServer</td><td><code>requestFunds(amount)</code></td><td>Sync</td></tr>
+          <tr><td>10</td><td>BankServer</td><td>Database</td><td><code>checkBalance()</code></td><td>Sync</td></tr>
+          <tr><td>11</td><td>BankServer</td><td>Database</td><td><code>deductAmount()</code></td><td>Sync</td></tr>
+          <tr><td>12</td><td>ATM</td><td>Customer</td><td><code>dispenseCash</code></td><td>Sync</td></tr>
+          <tr><td>13</td><td>ATM</td><td>Customer</td><td><code>printReceipt</code></td><td><strong style="color:var(--accent4)">Async</strong></td></tr>
+          <tr><td>14</td><td>ATM</td><td>Customer</td><td><code>ejectCard</code></td><td>Sync</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Error & Alternate Flows</h4>
+    <div class="table-wrap error-table">
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Trigger</th><th>ATM Response</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Invalid Card</strong></td>
+            <td><code>cardInvalid</code> from BankServer</td>
+            <td>Display error message, eject card immediately</td>
+          </tr>
+          <tr>
+            <td><strong>Wrong PIN</strong></td>
+            <td><code>pinIncorrect</code> from BankServer</td>
+            <td>Allow retry; block card after 3 consecutive failures</td>
+          </tr>
+          <tr>
+            <td><strong>Insufficient Funds</strong></td>
+            <td><code>balanceLow</code> from Database</td>
+            <td>Display "Insufficient Balance", cancel transaction</td>
+          </tr>
+          <tr>
+            <td><strong>Network Timeout</strong></td>
+            <td>No response from BankServer within timeout</td>
+            <td>Display "Service Unavailable", eject card safely</td>
+          </tr>
+          <tr>
+            <td><strong>Session Timeout</strong></td>
+            <td>No customer input for 60 seconds</td>
+            <td>Auto-eject card, clear session state</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── WHY LEARN ─── -->
+  <section class="section reveal" id="why-learn">
+    <span class="section-number">// 07</span>
+    <h2>Why Developers Should Learn UML</h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <span class="why-icon">🏗️</span>
+        <div class="why-title">Architecture First</div>
+        <div class="why-desc">Design before you build. Catch structural issues at the diagram stage, not during debugging.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">📋</span>
+        <div class="why-title">Interview Prep</div>
+        <div class="why-desc">Class and sequence diagrams are cornerstones of System Design and LLD interview rounds.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">👥</span>
+        <div class="why-title">Team Alignment</div>
+        <div class="why-desc">Share diagrams instead of lengthy prose. Everyone understands the design instantly.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">📖</span>
+        <div class="why-title">Living Documentation</div>
+        <div class="why-desc">UML diagrams serve as high-quality technical docs for onboarding and audits.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">♻️</span>
+        <div class="why-title">Reusable Patterns</div>
+        <div class="why-desc">UML maps naturally to design patterns — Factory, Observer, Strategy, and more.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🔭</span>
+        <div class="why-title">Scalability Thinking</div>
+        <div class="why-desc">Visualizing at scale surfaces coupling problems, bottlenecks, and single points of failure.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── TOOLS ─── -->
+  <section class="section reveal" id="tools">
+    <span class="section-number">// 08</span>
+    <h2>Recommended Tools</h2>
+    <p>Create UML diagrams <em>before coding</em> — when designing from scratch, building scalable systems, or preparing for interviews.</p>
+    <div class="tools-grid">
+      <a class="tool-card" href="https://draw.io" target="_blank">
+        <div class="tool-name">Draw.io</div>
+        <div class="tool-type">Web-based · Free</div>
+        <div class="tool-url">draw.io →</div>
+      </a>
+      <a class="tool-card" href="https://lucidchart.com" target="_blank">
+        <div class="tool-name">Lucidchart</div>
+        <div class="tool-type">Web-based · Freemium</div>
+        <div class="tool-url">lucidchart.com →</div>
+      </a>
+      <a class="tool-card" href="https://excalidraw.com" target="_blank">
+        <div class="tool-name">Excalidraw</div>
+        <div class="tool-type">Web-based · Free</div>
+        <div class="tool-url">excalidraw.com →</div>
+      </a>
+      <a class="tool-card" href="https://plantuml.com" target="_blank">
+        <div class="tool-name">PlantUML</div>
+        <div class="tool-type">Code-based · Free</div>
+        <div class="tool-url">plantuml.com →</div>
+      </a>
+      <a class="tool-card" href="https://mermaid.js.org" target="_blank">
+        <div class="tool-name">Mermaid</div>
+        <div class="tool-type">Code-based · Free</div>
+        <div class="tool-url">mermaid.js.org →</div>
+      </a>
+      <a class="tool-card" href="https://app.diagrams.net" target="_blank">
+        <div class="tool-name">diagrams.net</div>
+        <div class="tool-type">Web-based · Free</div>
+        <div class="tool-url">diagrams.net →</div>
+      </a>
+    </div>
+  </section>
+
+  <hr class="divider reveal">
+
+  <!-- ─── FOLDER STRUCTURE ─── -->
+  <section class="section reveal" id="folder">
+    <span class="section-number">// 09</span>
+    <h2>Folder Structure</h2>
+    <p>A clean project layout for organizing your UML artifacts alongside your codebase:</p>
+    <div class="folder-tree">
+      <div class="tree-item root">uml-diagrams/</div>
+      <div class="tree-item">│</div>
+      <div class="tree-item dir">├── class-diagrams/</div>
+      <div class="tree-item file">│   ├── car.uml</div>
+      <div class="tree-item file">│   └── user-system.uml</div>
+      <div class="tree-item dir">├── sequence-diagrams/</div>
+      <div class="tree-item file">│   ├── login-flow.uml</div>
+      <div class="tree-item file">│   └── atm-transaction.uml</div>
+      <div class="tree-item dir">├── examples/</div>
+      <div class="tree-item file">│   └── e-commerce-lld.uml</div>
+      <div class="tree-item dir">├── screenshots/</div>
+      <div class="tree-item file">│   ├── class-diagram.png</div>
+      <div class="tree-item file">│   └── sequence-diagram.png</div>
+      <div class="tree-item file">└── README.md</div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer style="margin-top:80px; padding-top:32px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div style="font-family:var(--mono); font-size:12px; color:var(--text-dim);">UML Quick Guide — Developer Reference v2.0</div>
+    <div style="font-family:var(--mono); font-size:11px; color:var(--text-dim);">Structured · Visual · Practical</div>
+  </footer>
+
+</div><!-- /page-wrapper -->
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Stagger step items
+  document.querySelectorAll('.step-item').forEach((el, i) => {
+    el.style.animationDelay = `${i * 0.1}s`;
+  });
+</script>
+</body>
+</html>
